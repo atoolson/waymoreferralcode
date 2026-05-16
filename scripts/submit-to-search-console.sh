@@ -5,6 +5,7 @@ SITE_URL="https://waymoreferralcode.com/"
 SITEMAP_URL="https://waymoreferralcode.com/sitemap.xml"
 SCOPES="https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/webmasters,https://www.googleapis.com/auth/siteverification"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+QUOTA_PROJECT="$(gcloud config get-value project 2>/dev/null || true)"
 
 if ! command -v gcloud >/dev/null 2>&1; then
   echo "Install the Google Cloud CLI first: https://cloud.google.com/sdk/docs/install" >&2
@@ -25,9 +26,9 @@ api() {
   local status
   response="$(mktemp)"
   if [[ -n "$body" ]]; then
-    status="$(curl -sS -o "$response" -w "%{http_code}" -X "$method" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d "$body" "$url")"
+    status="$(curl -sS -o "$response" -w "%{http_code}" -X "$method" -H "Authorization: Bearer $TOKEN" -H "X-Goog-User-Project: $QUOTA_PROJECT" -H "Content-Type: application/json" -d "$body" "$url")"
   else
-    status="$(curl -sS -o "$response" -w "%{http_code}" -X "$method" -H "Authorization: Bearer $TOKEN" "$url")"
+    status="$(curl -sS -o "$response" -w "%{http_code}" -X "$method" -H "Authorization: Bearer $TOKEN" -H "X-Goog-User-Project: $QUOTA_PROJECT" "$url")"
   fi
   cat "$response"
   rm -f "$response"
