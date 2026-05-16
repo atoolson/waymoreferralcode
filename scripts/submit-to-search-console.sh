@@ -74,6 +74,15 @@ if ! api PUT "https://www.googleapis.com/webmasters/v3/sites/$ENC_SITE" >/dev/nu
 fi
 
 echo "Submitting sitemap: $SITEMAP_URL"
-api PUT "https://www.googleapis.com/webmasters/v3/sites/$ENC_SITE/sitemaps/$ENC_SITEMAP" >/dev/null
+if ! api PUT "https://www.googleapis.com/webmasters/v3/sites/$ENC_SITE/sitemaps/$ENC_SITEMAP" >/dev/null; then
+  echo "Sitemap submission failed. Trying HTML-file verification, then retrying."
+  if verify_site; then
+    echo "Verified $SITE_URL"
+    api PUT "https://www.googleapis.com/webmasters/v3/sites/$ENC_SITE" >/dev/null
+    api PUT "https://www.googleapis.com/webmasters/v3/sites/$ENC_SITE/sitemaps/$ENC_SITEMAP" >/dev/null
+  else
+    prepare_verification_file
+  fi
+fi
 echo
 echo "Done. Search Console property and sitemap submission completed for $SITE_URL"
